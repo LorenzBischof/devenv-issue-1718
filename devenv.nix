@@ -269,6 +269,11 @@ in
 
       chmod +w "$WEBROOT"sites/default
 
+      # @TODO: MAJOR TODO, IMPORTANT! Instead of this, generate a
+      # settings.devenv.php file that's in a Nix derivation and link it into
+      # settings.php. That will fix multiple bugs, like passwords not being
+      # updated, and make this more idiomatic Nix.
+
       # Ensure settings.local.php exists and has the correct database config.
       if [ ! -f "$WEBROOT"sites/default/settings.local.php ]; then
         # Example local settings file is created by Composer, if it hasn't
