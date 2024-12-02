@@ -243,7 +243,7 @@ in
         '';
       in
       ''
-        export PATH="${config.env.DEVENV_ROOT}/vendor/bin:${mysqlWrapped}:$PATH"
+        export PATH="${config.env.DEVENV_ROOT}/vendor/bin:${mysqlWrapped}/bin:$PATH"
         export DRUSH_OPTIONS_URI="https://${cfg.url}"
         export WEBROOT=`[ -z "${cfg.webRoot}" ] || echo "${cfg.webRoot}" | sed 's:/*$::' | sed 's:^./::'`"/"
 
