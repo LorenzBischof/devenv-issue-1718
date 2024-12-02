@@ -2,7 +2,9 @@
 
 ## Instructions
 
-Add this to the `inputs` in `devenv.yaml`:
+This assumes Devenv is installed, if it's not, see: [Devenv Getting Started instructions](https://devenv.sh/getting-started/).
+
+Once you have installed Devenv and done the _Initial set up_ step, add this to the `inputs` in `devenv.yaml`:
 
 ```yaml
 drupal:
