@@ -132,7 +132,7 @@ in
 
     languages.php = lib.mkDefault {
       enable = true;
-      extensions = [ "xdebug" ];
+      extensions = [ "xdebug" "apcu" ];
       version = "8.3";
       fpm.phpOptions = ''
         memory_limit = 1G
