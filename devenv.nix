@@ -239,7 +239,7 @@ in
     };
 
     enterShell = ''
-      export PATH="${config.env.DEVENV_ROOT}/vendor/bin:${builtins.dirOf config.scripts.mysql.exec}:$PATH"
+      export PATH="${config.env.DEVENV_ROOT}/vendor/bin:${builtins.dirOf config.scripts.mysql.exec}/bin:$PATH"
       export DRUSH_OPTIONS_URI="https://${cfg.url}"
       export WEBROOT=`[ -z "${cfg.webRoot}" ] || echo "${cfg.webRoot}" | sed 's:/*$::' | sed 's:^./::'`"/"
 
