@@ -135,6 +135,8 @@ in
       extensions = [ "xdebug" "apcu" ];
       version = "8.3";
       fpm.phpOptions = ''
+        upload_max_filesize = 1G
+        post_max_size = 1G
         memory_limit = 1G
         xdebug.mode = debug
         xdebug.start_with_request = yes
