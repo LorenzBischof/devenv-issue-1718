@@ -350,16 +350,16 @@ in
         echo
         echo "Setting up Caddy, you may be asked for your sudo password"
         echo
-        sudo setcap cap_net_bind_service=+ep caddy
-      
+        sudo setcap cap_net_bind_service=+ep ${pkgs.caddy}/bin/caddy
+
         # Assume that caddy certs only need to be installed at the same time
         # port capability is created.
         # Start Caddy
-        caddy run > /dev/null 2>&1 &
+        caddy start
         # Talk to started Caddy, setup certificate trust
         caddy trust
         # Stop Caddy (the user will start it with `devenv up`)
-        kill %-
+        caddy stop
       fi
     '';
   };
