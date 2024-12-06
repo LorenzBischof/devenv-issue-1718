@@ -132,7 +132,7 @@ in
 
     languages.php = lib.mkDefault {
       enable = true;
-      extensions = [ "xdebug" "apcu" ];
+      extensions = [ "xdebug" ];
       version = "8.3";
       fpm.phpOptions = ''
         upload_max_filesize = 1G
