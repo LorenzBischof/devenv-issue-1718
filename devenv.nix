@@ -308,7 +308,7 @@ in
         sed --in-place "s#\$settings\['hash_salt'\] = '''#\$settings['hash_salt'] = '$SALT'#" "$WEBROOT"sites/default/settings.php
       elif ! grep -q "^\$settings\['hash_salt'\] =" "$WEBROOT"sites/default/settings.php && ! grep -Eq "^\\\$drupal_hash_salt = '[^'\s]+'" "$WEBROOT"sites/default/settings.php; then
         SALT=`head -c 55 /dev/urandom | base64`
-        cat >> "$WEBROOT" sites/default/settings.php <<EOF
+        cat >> "$WEBROOT"sites/default/settings.php <<EOF
       \$settings['hash_salt'] = '$SALT';
       EOF
       fi
