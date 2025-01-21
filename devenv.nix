@@ -130,32 +130,38 @@ in
         description = "Connect to a background process-compose (only works if 'devenv up' was started in the background, using 'devenv up -d')";
       };
 
-    languages.php = lib.mkDefault {
-      enable = true;
-      extensions = [ "xdebug" ];
-      version = "8.3";
-      fpm.phpOptions = ''
-        upload_max_filesize = 1G
-        post_max_size = 1G
-        memory_limit = 1G
-        xdebug.mode = debug
-        xdebug.start_with_request = yes
-        xdebug.client_host = unix://${config.env.DEVENV_RUNTIME}/xdebug.sock
-        xdebug.log = ${config.env.DEVENV_RUNTIME}/xdebug.log
-      '';
-      fpm.pools = {
-        drupal = {
-          settings = {
-            "pm" = "dynamic";
-            "pm.max_children" = 4;
-            "pm.min_spare_servers" = 1;
-            "pm.max_spare_servers" = 2;
-            "pm.start_servers" = 1;
-            "pm.max_requests" = 50;
+    languages.php =
+      let
+        ini = ''
+          [PHP]
+          upload_max_filesize = 1G
+          post_max_size = 1G
+          memory_limit = 1G
+          xdebug.mode = debug
+          xdebug.start_with_request = yes
+          xdebug.client_host = unix://${config.env.DEVENV_RUNTIME}/xdebug.sock
+          xdebug.log = ${config.env.DEVENV_RUNTIME}/xdebug.log
+        '';
+      in
+      {
+        inherit ini;
+        enable = lib.mkDefault true;
+        extensions = [ "xdebug" ];
+        version = lib.mkDefault "8.3";
+        fpm.phpOptions = ini;
+        fpm.pools = {
+          drupal = lib.mkDefault {
+            settings = {
+              "pm" = "dynamic";
+              "pm.max_children" = 4;
+              "pm.min_spare_servers" = 1;
+              "pm.max_spare_servers" = 2;
+              "pm.start_servers" = 1;
+              "pm.max_requests" = 50;
+            };
           };
         };
       };
-    };
 
     services.caddy.enable = lib.mkDefault true;
 
