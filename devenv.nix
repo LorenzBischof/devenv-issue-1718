@@ -354,12 +354,15 @@ in
 
         # Assume that caddy certs only need to be installed at the same time
         # port capability is created.
+
         # Start Caddy
-        caddy start
+        ${pkgs.caddy}/bin/caddy start
+
         # Talk to started Caddy, setup certificate trust
-        caddy trust
-        # Stop Caddy (the user will start it with `devenv up`)
-        caddy stop
+        ${pkgs.caddy}/bin/caddy trust
+
+        # Stop Caddy, the user will start it with `devenv up`
+        ${pkgs.caddy}/bin/caddy stop
       fi
     '';
   };
