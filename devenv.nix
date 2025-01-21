@@ -211,8 +211,8 @@ in
       }
     '';
 
-    services.mysql = lib.mkDefault {
-      enable = true;
+    services.mysql = {
+      enable = lib.mkDefault true;
       initialDatabases = [{ name = "${cfg.databaseName}"; }];
       ensureUsers = [
         {
@@ -227,18 +227,18 @@ in
       # For convenience, set the details needed for the client to connect to the
       # database. This makes it possible to get into the db by running `mysql`
       # with no args.
-      useDefaultsExtraFile = true;
+      useDefaultsExtraFile = lib.mkDefault true;
       settings = {
         mysqld = {
-          skip-networking = true;
+          skip-networking = lib.mkDefault true;
         };
         client = {
           user = cfg.databaseUser;
           password = cfg.databasePassword;
           database = cfg.databaseName;
-          socket = "${config.env.DEVENV_RUNTIME}/mysql.sock";
+          socket = lib.mkDefault "${config.env.DEVENV_RUNTIME}/mysql.sock";
         };
-        mysqldump = {
+        mysqldump = lib.mkDefault {
           quick = true;
         };
       };
