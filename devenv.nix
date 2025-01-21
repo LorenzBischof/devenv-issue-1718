@@ -231,6 +231,7 @@ in
       settings = {
         mysqld = {
           skip-networking = lib.mkDefault true;
+          transaction_isolation = "READ-COMMITTED";
         };
         client = {
           user = cfg.databaseUser;
