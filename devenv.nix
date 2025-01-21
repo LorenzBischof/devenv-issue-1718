@@ -62,7 +62,6 @@ in
 
     scripts.crr = {
       exec = ''
-        WEBROOT=`[ -z "${cfg.webRoot}" ] || echo "${cfg.webRoot}" | sed 's:/*$::' | sed 's:^./::'`"/"
         while sleep 0.2; do find "$WEBROOT"{modules,themes} -type f | ${pkgs.entr}/bin/entr -s 'drush cr'; done
       '';
       description = "Clear Drupal caches whenever a module or theme file changes";
@@ -245,132 +244,139 @@ in
       };
     };
 
-    enterShell = ''
-      export PATH="${builtins.dirOf config.scripts.mysql.exec}:$PATH:${config.env.DEVENV_ROOT}/vendor/bin"
-      export DRUSH_OPTIONS_URI="https://${cfg.url}"
-      export WEBROOT=`[ -z "${cfg.webRoot}" ] || echo "${cfg.webRoot}" | sed 's:/*$::' | sed 's:^./::'`"/"
+    enterShell =
+      let
+        devenvSettings = pkgs.writeText "settings.devenv.php" ''
+          <?php
 
-      # Workaround 'complete: command not found' error.
-      export BASH_COMPLETION_USER_DIR="${config.env.DEVENV_DOTFILE}/bash-completions"
+          /**
+           * @file
+           * Auto-generated settings file for connecting Devenv services.
+           *
+           * Any changes made here will be overwritten.
+           */
 
-      export MYSQL_HISTFILE="${config.env.DEVENV_STATE}/mysql_history"
+          $databases['default']['default'] = [
+            'database' => '${cfg.databaseName}',
+            'username' => '${cfg.databaseUser}',
+            'password' => '${cfg.databasePassword}',
+            'unix_socket' => '${config.env.DEVENV_RUNTIME}/mysql.sock',
+            'driver' => 'mysql',
+            'prefix' => ''',
+          ];
+        '';
+      in
+      ''
+        export PATH="${builtins.dirOf config.scripts.mysql.exec}:$PATH:${config.env.DEVENV_ROOT}/vendor/bin"
+        export DRUSH_OPTIONS_URI="https://${cfg.url}"
 
-      # Share state between instances of Caddy. This is crucial for stopping
-      # conflicts when working on multiple projects.
-      if [ ! -L "${config.env.DEVENV_STATE}/caddy" ]; then
-        caddy_dirs=(
-          "$HOME/.local/share/caddy"
-          "$HOME/Library/Application Support/Caddy"
-          "$HOME/lib/caddy"
-          "$HOME/caddy"
-        )
+        WEBROOT="$(
+          [ -z "${cfg.webRoot}" ] || echo "${cfg.webRoot}" \
+          | sed 's:/*$::' \
+          | sed 's:^./::'
+        )"
 
-        for caddy_dir in "''${caddy_dirs[@]}"; do
-          if [ -d "$caddy_dir" ]; then
-            # Fix 'Failed to create symbolic link' error on enterShell,
-            # when the state dir hasn't been created yet.
-            mkdir -p "${config.env.DEVENV_STATE}"
-            ln -s "$caddy_dir" "${config.env.DEVENV_STATE}/caddy"
-            break
+        if [ ! -z "$WEBROOT" ]; then
+          WEBROOT="$WEBROOT/"
+        fi
+
+        export WEBROOT
+
+        # Workaround 'complete: command not found' error.
+        export BASH_COMPLETION_USER_DIR="${config.env.DEVENV_DOTFILE}/bash-completions"
+
+        export MYSQL_HISTFILE="${config.env.DEVENV_STATE}/mysql_history"
+
+        # Share state between instances of Caddy. This is crucial for stopping
+        # conflicts when working on multiple projects.
+        if [ ! -L "${config.env.DEVENV_STATE}/caddy" ]; then
+          caddy_dirs=(
+            "$HOME/.local/share/caddy"
+            "$HOME/Library/Application Support/Caddy"
+            "$HOME/lib/caddy"
+            "$HOME/caddy"
+          )
+
+          for caddy_dir in "''${caddy_dirs[@]}"; do
+            if [ -d "$caddy_dir" ]; then
+              # Fix 'Failed to create symbolic link' error on enterShell,
+              # when the state dir hasn't been created yet.
+              mkdir -p "${config.env.DEVENV_STATE}"
+              ln -s "$caddy_dir" "${config.env.DEVENV_STATE}/caddy"
+              break
+            fi
+          done
+        fi
+
+        chmod +w "$WEBROOT"sites/default
+        [ -f "$WEBROOT"sites/default/settings.devenv.php ] && rm "$WEBROOT"sites/default/settings.devenv.php
+        ln -s ${devenvSettings} "$WEBROOT"sites/default/settings.devenv.php
+
+        if grep -q "^\$settings\['hash_salt'\] = '''" "$WEBROOT"sites/default/settings.php; then
+          SALT=`head -c 55 /dev/urandom | base64`
+          sed --in-place "s#\$settings\['hash_salt'\] = '''#\$settings['hash_salt'] = '$SALT'#" "$WEBROOT"sites/default/settings.php
+        elif ! grep -q "^\$settings\['hash_salt'\] =" "$WEBROOT"sites/default/settings.php && ! grep -Eq "^\\\$drupal_hash_salt = '[^'\s]+'" "$WEBROOT"sites/default/settings.php; then
+          SALT=`head -c 55 /dev/urandom | base64`
+          cat >> "$WEBROOT"sites/default/settings.php <<EOF
+        \$settings['hash_salt'] = '$SALT';
+        EOF
+        fi
+
+        if ! sed "s:\(.*\)\(//\|#\).*:\1:g" "$WEBROOT"sites/default/settings.php | grep -Eq "include[^\n]+/settings.devenv.php"; then
+          cat >> "$WEBROOT"sites/default/settings.php <<EOF
+
+        if (file_exists(\$app_root . '/' . \$site_path . '/settings.devenv.php')) {
+          include \$app_root . '/' . \$site_path . '/settings.devenv.php';
+        }
+        EOF
+        fi
+
+        if ! grep -q "/$WEBROOT""sites/default/settings.devenv.php" .gitignore; then
+          echo "/$WEBROOT""sites/default/settings.devenv.php" >> .gitignore
+        fi
+
+        mkdir -p "${config.env.DEVENV_DOTFILE}/bash-completions/completions"
+        if [ ! -f "${config.env.DEVENV_DOTFILE}/bash-completions/completions/drush" ]; then
+          drush completion > "${config.env.DEVENV_DOTFILE}/bash-completions/completions/drush"
+        fi
+
+        if [ ! -f "${config.env.DEVENV_DOTFILE}/bash-completions/completions/composer" ]; then
+          composer completion bash > "${config.env.DEVENV_DOTFILE}/bash-completions/completions/composer"
+        fi
+
+        if command -v terminus 2>&1 >/dev/null; then
+          if [ ! -f "${config.env.DEVENV_DOTFILE}/bash-completions/completions/terminus" ]; then
+            terminus completion > "${config.env.DEVENV_DOTFILE}/bash-completions/completions/terminus"
           fi
-        done
-      fi
-
-      chmod +w "$WEBROOT"sites/default
-
-      # @TODO: MAJOR TODO, IMPORTANT! Instead of this, generate a
-      # settings.devenv.php file that's in a Nix derivation and link it into
-      # settings.php. That will fix multiple bugs, like passwords not being
-      # updated, and make this more idiomatic Nix.
-
-      # Ensure settings.local.php exists and has the correct database config.
-      if [ ! -f "$WEBROOT"sites/default/settings.local.php ]; then
-        # Example local settings file is created by Composer, if it hasn't
-        # been run yet, the file might not yet exist, so just create an
-        # empty file.
-        if [ -f "$WEBROOT"sites/example.settings.local.php ]; then
-          cp "$WEBROOT"sites/example.settings.local.php web/sites/default/settings.local.php
-        else
-          echo '<?php' > "$WEBROOT"sites/default/settings.local.php
         fi
-      fi
 
-      if ! grep -q "\$databases\['default'\]\['default'\] =" "$WEBROOT"sites/default/settings.local.php; then
-        cat >> "$WEBROOT"sites/default/settings.local.php <<EOF
-
-      \$databases['default']['default'] = [
-        'database' => '${cfg.databaseName}',
-        'username' => '${cfg.databaseUser}',
-        'password' => '${cfg.databasePassword}',
-        'unix_socket' => ''',
-        'driver' => 'mysql',
-        'prefix' => ''',
-      ];
-      EOF
-      fi
-      sed --in-place "s#'unix_socket' => '[^'\n]*',#'unix_socket' => '${config.env.DEVENV_RUNTIME}/mysql.sock',#" "$WEBROOT"sites/default/settings.local.php
-
-      if grep -q "^\$settings\['hash_salt'\] = '''" "$WEBROOT"sites/default/settings.php; then
-        SALT=`head -c 55 /dev/urandom | base64`
-        sed --in-place "s#\$settings\['hash_salt'\] = '''#\$settings['hash_salt'] = '$SALT'#" "$WEBROOT"sites/default/settings.php
-      elif ! grep -q "^\$settings\['hash_salt'\] =" "$WEBROOT"sites/default/settings.php && ! grep -Eq "^\\\$drupal_hash_salt = '[^'\s]+'" "$WEBROOT"sites/default/settings.php; then
-        SALT=`head -c 55 /dev/urandom | base64`
-        cat >> "$WEBROOT"sites/default/settings.php <<EOF
-      \$settings['hash_salt'] = '$SALT';
-      EOF
-      fi
-
-      if ! sed "s:\(.*\)\(//\|#\).*:\1:g" "$WEBROOT"sites/default/settings.php | grep -Eq "include[^\n]+/settings.local.php"; then
-        cat >> "$WEBROOT"sites/default/settings.php <<EOF
-
-      if (file_exists(\$app_root . '/' . \$site_path . '/settings.local.php')) {
-        include \$app_root . '/' . \$site_path . '/settings.local.php';
-      }
-      EOF
-      fi
-
-      mkdir -p "${config.env.DEVENV_DOTFILE}/bash-completions/completions"
-      if [ ! -f "${config.env.DEVENV_DOTFILE}/bash-completions/completions/drush" ]; then
-        drush completion > "${config.env.DEVENV_DOTFILE}/bash-completions/completions/drush"
-      fi
-
-      if [ ! -f "${config.env.DEVENV_DOTFILE}/bash-completions/completions/composer" ]; then
-        composer completion bash > "${config.env.DEVENV_DOTFILE}/bash-completions/completions/composer"
-      fi
-
-      if command -v terminus 2>&1 >/dev/null; then
-        if [ ! -f "${config.env.DEVENV_DOTFILE}/bash-completions/completions/terminus" ]; then
-          terminus completion > "${config.env.DEVENV_DOTFILE}/bash-completions/completions/terminus"
+        if command -v platform 2>&1 >/dev/null; then
+          if [ ! -f "${config.env.DEVENV_DOTFILE}/bash-completions/completions/platform" ]; then
+            platform completion > "${config.env.DEVENV_DOTFILE}/bash-completions/completions/platform"
+          fi
         fi
-      fi
 
-      if command -v platform 2>&1 >/dev/null; then
-        if [ ! -f "${config.env.DEVENV_DOTFILE}/bash-completions/completions/platform" ]; then
-          platform completion > "${config.env.DEVENV_DOTFILE}/bash-completions/completions/platform"
+        # If this prompts obnoxiously often (due to updates), it could be changed to:
+        # sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
+        # See: https://github.com/cachix/devenv/issues/553
+        if ! getcap ${pkgs.caddy}/bin/caddy | grep -q 'cap_net_bind_service=ep'; then
+          echo
+          echo "Setting up Caddy, you may be asked for your sudo password"
+          echo
+          sudo setcap cap_net_bind_service=+ep ${pkgs.caddy}/bin/caddy
+
+          # Assume that caddy certs only need to be installed at the same time
+          # port capability is created.
+
+          # Start Caddy
+          ${pkgs.caddy}/bin/caddy start
+
+          # Talk to started Caddy, setup certificate trust
+          ${pkgs.caddy}/bin/caddy trust
+
+          # Stop Caddy, the user will start it with `devenv up`
+          ${pkgs.caddy}/bin/caddy stop
         fi
-      fi
-
-      # If this prompts obnoxiously often (due to updates), it could be changed to:
-      # sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80
-      # See: https://github.com/cachix/devenv/issues/553
-      if ! getcap ${pkgs.caddy}/bin/caddy | grep -q 'cap_net_bind_service=ep'; then
-        echo
-        echo "Setting up Caddy, you may be asked for your sudo password"
-        echo
-        sudo setcap cap_net_bind_service=+ep ${pkgs.caddy}/bin/caddy
-
-        # Assume that caddy certs only need to be installed at the same time
-        # port capability is created.
-
-        # Start Caddy
-        ${pkgs.caddy}/bin/caddy start
-
-        # Talk to started Caddy, setup certificate trust
-        ${pkgs.caddy}/bin/caddy trust
-
-        # Stop Caddy, the user will start it with `devenv up`
-        ${pkgs.caddy}/bin/caddy stop
-      fi
-    '';
+      '';
   };
 }
