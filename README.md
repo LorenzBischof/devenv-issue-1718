@@ -1,4 +1,20 @@
-# Drupal devenv configuration
+# Drupal development environments in minutes, using Devenv and Nix!
+
+No hassle, no haggle, no Docker.
+
+## Introduction
+
+[Devenv](https://devenv.sh) gives us powerful tools for making PHP development environments, even so, configuring a _Drupal_ development environment on top of this still requires a lot of work. This project aims to provide that configuration, and close the gap between Nix + Devenv and ddev (which provides a Just Works™ developer experience for Drupal).
+
+## What's included
+
+- MySQL, php-fpm, caddy stack pre-configured for Drupal projects.
+- Drupal tools like `drush` and `composer`, with tab-completion, and no container in-between you and the tool.
+- `mysql` client pre-configured with the correct database details.
+- SSL support.
+- No messing with ports, projects use https://<PROJECT DIRECTORY>.localhost (and this is configurable).
+- Auto-configuration of Drupal's `settings.php`.
+- Handy scripts for common tasks, like clearing caches, and importing SQL files.
 
 ## Instructions
 
