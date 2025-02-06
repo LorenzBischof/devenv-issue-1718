@@ -12,7 +12,7 @@ No hassle, no haggle, no Docker¹.
 - Drupal tools like `drush` and `composer`, with tab-completion, and no container in-between you and the tool.
 - `mysql` client pre-configured with the correct database details.
 - SSL support.
-- No messing with ports, projects use https://<PROJECT DIRECTORY>.localhost (and this is configurable).
+- No messing with ports, projects use `https://<PROJECT DIRECTORY>.localhost` (and this is configurable).
 - Auto-configuration of Drupal's `settings.php`.
 - Handy scripts for common tasks, like clearing caches, and importing SQL files.
 - (VSCode) pre-configured extensions and completely automated setup of XDebug, just hit the Debug tab and click the play button!
