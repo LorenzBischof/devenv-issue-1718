@@ -14,31 +14,38 @@ in
     url = lib.mkOption {
       type = lib.types.str;
       default = (lib.lists.last (lib.path.subpath.components (lib.path.splitRoot (/. + builtins.toPath config.env.DEVENV_ROOT)).subpath)) + ".localhost";
+      defaultText = lib.literalExpression "<DIRECTORY NAME>.localhost";
+      description = "This Drupal development site's URL. Defaults to the directory name + 'localhost'.";
     };
 
     webRoot = lib.mkOption {
       type = lib.types.str;
       default = "web";
+      description = "Directory, relative to the project root, of Drupal's public files. This is usually 'web' for Drupal 8+ projects.";
     };
 
     databaseName = lib.mkOption {
       type = lib.types.str;
       default = "drupal";
+      description = "Database name for Drupal installation. Each project uses its own instance of MySQL, so changing this is usually not necessary.";
     };
 
     databaseUser = lib.mkOption {
       type = lib.types.str;
       default = "drupal";
+      description = "MySQL database user. Is not necessary in most configurations as UNIX socket authentication is used.";
     };
 
     databasePassword = lib.mkOption {
       type = lib.types.str;
       default = "drupal";
+      description = "MySQL database password. Is not necessary in most configurations as UNIX socket authentication is used.";
     };
 
     dbDumpDirectory = lib.mkOption {
       type = lib.types.path;
       default = "${config.env.DEVENV_ROOT}/db-init";
+      description = "Directory to search for .sql files, affects scripts like sql-import and sql-clean.";
     };
   };
 
