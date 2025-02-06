@@ -1,10 +1,10 @@
 # Drupal development environments in minutes, using Devenv and Nix!
 
-No hassle, no haggle, no Docker.
+No hassle, no haggle, no Docker¹.
 
 ## Introduction
 
-[Devenv](https://devenv.sh) gives us powerful tools for making PHP development environments, even so, configuring a _Drupal_ development environment on top of this still requires a lot of work. This project aims to provide that configuration, and close the gap between Nix + Devenv and ddev (which provides a Just Works™ developer experience for Drupal).
+[Devenv](https://devenv.sh) gives us powerful tools for making PHP development environments, even so, configuring a _Drupal_ development environment still requires a lot of work. _drupal-devenv_ aims to do that configuration work, closing the gap between Nix + Devenv and ddev (which provides a Just Works™ developer experience for Drupal).
 
 ## What's included
 
@@ -85,3 +85,7 @@ languages.php.extensions = [ "xdebug" "imagick" ];
 Add this anywhere in the `{ }` brackets.
 
 Note: if your extensions list does not include `"xdebug"` it will not be installed, since _drupal-devenv_ also uses `languages.php.extensions`. This also means you can disable XDebug in your environment, if you don't want it.
+
+## Footnotes
+
+¹ Docker is fine, and Nix works well with it, but why use an extra layer of abstraction if it's not necessary? drupal-devenv aims to provide all the advantages of a Docker-based setup, without the container overhead.
