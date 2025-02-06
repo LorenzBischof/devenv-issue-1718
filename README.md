@@ -65,3 +65,23 @@ Then add the following to `devenv.nix`:
 ```
 
 `vscodeIntegration` configures VS Code according to [Drupal best practices](https://www.drupal.org/docs/develop/development-tools/editors-and-ides/configuring-visual-studio-code). Since not everyone uses VS Code and the integration overrides workspace settings, this is optional.
+
+## Customising
+
+Check the [devenv guide](https://devenv.sh/getting-started/) for instructions on customising your Drupal development environment.
+
+_drupal-devenv_ aims to be composable. It shouldn't stop you customising your environment to your tastes, installing more services, or integrating those services into your Drupal setup.
+
+### Examples
+
+#### Adding an extension
+
+In your `devenv.nix` add the name of the extension. This example adds ImageMagick:
+
+```nix
+languages.php.extensions = [ "xdebug" "imagick" ];
+```
+
+Add this anywhere in the `{ }` brackets.
+
+Note: if your extensions list does not include `"xdebug"` it will not be installed, since _drupal-devenv_ also uses `languages.php.extensions`. This also means you can disable XDebug in your environment, if you don't want it.
