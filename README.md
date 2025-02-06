@@ -21,7 +21,7 @@ No hassle, no haggle, no Docker¹.
 
 This assumes Devenv is installed, if it's not, see: [Devenv Getting Started instructions](https://devenv.sh/getting-started/).
 
-Once you have installed Devenv and done the _Initial set up_ step, add this to the `inputs` in `devenv.yaml`:
+Once you have installed Devenv and done the _Initial set up_ step, open `devenv.yaml` and add this to `inputs`:
 
 ```yaml
 drupal:
@@ -29,18 +29,16 @@ drupal:
   flake: false
 ```
 
-[Inputs documentation](https://devenv.sh/inputs/)
-
-Then add to the `imports` section of `devenv.yaml`:
+Then add the `imports` section:
 
 ```yaml
 imports:
   - drupal
 ```
 
-It's likely the `imports` section will not be in the `devenv.yaml` file already, and will need to be created. Also, see [Imports documentation](https://devenv.sh/composing-using-imports/)
+### `devenv.yaml` Example
 
-For example, a complete `devenv.yaml` with Drupal devenv might look like:
+A complete _drupal-devenv_ enabled `devenv.yaml` should look like this:
 
 ```devenv.yaml
 inputs:
@@ -65,6 +63,19 @@ Then add the following to `devenv.nix`:
 ```
 
 `vscodeIntegration` configures VS Code according to [Drupal best practices](https://www.drupal.org/docs/develop/development-tools/editors-and-ides/configuring-visual-studio-code). Since not everyone uses VS Code and the integration overrides workspace settings, this is optional.
+
+### See also
+
+- [Inputs documentation](https://devenv.sh/inputs/)
+- [Imports documentation](https://devenv.sh/composing-using-imports/)
+
+### 🚀 Finished!
+
+Just run `devenv up` to start the services.
+
+Or, if you didn't setup [automatic shell activation](https://devenv.sh/automatic-shell-activation/), run `devenv shell` and then `devenv up`.
+
+Automatic shell activation is highly recommended, it's a really cool feature for automatically switching development environments just by changing directory.
 
 ## Customising
 
