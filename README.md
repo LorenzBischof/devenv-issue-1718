@@ -38,7 +38,7 @@ No hassle, no haggle, no Docker¹.
      - drupal
    ```
 
-5. Then add the following to `devenv.nix`:
+5. Add the following to `devenv.nix`:
 
    ```nix
      drupal.enable = true;
@@ -47,6 +47,12 @@ No hassle, no haggle, no Docker¹.
      # configured for you.
     drupal.vscodeIntegration.enable = true;
    ```
+
+6. From the terminal, run `devenv up`
+
+   Or, if you didn't setup [automatic shell activation](https://devenv.sh/automatic-shell-activation/), run `devenv shell` and then `devenv up`.
+
+7. 🚀 Finished!
 
 ### `devenv.yaml` example
 
