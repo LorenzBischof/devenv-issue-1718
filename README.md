@@ -17,26 +17,38 @@ No hassle, no haggle, no Docker¹.
 - Handy scripts for common tasks, like clearing caches, and importing SQL files.
 - (VSCode) pre-configured extensions and completely automated setup of XDebug, just hit the Debug tab and click the play button!
 
-## Instructions
+## Getting started
 
-This assumes Devenv is installed, if it's not, see: [Devenv Getting Started instructions](https://devenv.sh/getting-started/).
+1. If you haven't already, [Install Devenv](https://devenv.sh/getting-started/) and complete the _Initial set up_ to initialise Devenv for your project.
 
-Once you have installed Devenv and done the _Initial set up_ step, open `devenv.yaml` and add this to `inputs`:
+   1.1. (optional, recommended) Setup [automatic shell activation](https://devenv.sh/automatic-shell-activation/).
 
-```yaml
-drupal:
-  url: gitlab:woolwichweb/drupal-devenv
-  flake: false
-```
+2. Open `devenv.yaml` and add this to `inputs`:
 
-Then add the `imports` section:
+   ```yaml
+     drupal:
+       url: gitlab:woolwichweb/drupal-devenv
+       flake: false
+   ```
 
-```yaml
-imports:
-  - drupal
-```
+3. At the bottom of `devenv.yaml`, add the `imports` section:
 
-### `devenv.yaml` Example
+   ```yaml
+   imports:
+     - drupal
+   ```
+
+5. Then add the following to `devenv.nix`:
+
+   ```nix
+     drupal.enable = true;
+
+     # Optional. Remove if you don't use VS Code, or do not want it to be
+     # configured for you.
+    drupal.vscodeIntegration.enable = true;
+   ```
+
+### `devenv.yaml` example
 
 A complete _drupal-devenv_ enabled `devenv.yaml` should look like this:
 
@@ -52,32 +64,35 @@ imports:
   - drupal
 ```
 
-Then add the following to `devenv.nix`:
+### `devenv.nix` example
 
 ```nix
-  drupal.enable = true;
+{ pkgs, lib, config, inputs, ... }:
 
-  # Optional. Remove if you don't use VS Code, or do not want it to be
-  # configured for you.
+{
+  drupal.enable = true;
   drupal.vscodeIntegration.enable = true;
+}
 ```
 
-`vscodeIntegration` configures VS Code according to [Drupal best practices](https://www.drupal.org/docs/develop/development-tools/editors-and-ides/configuring-visual-studio-code). Since not everyone uses VS Code and the integration overrides workspace settings, this is optional.
+A note regarding `drupal.vscodeIntegration`: this configures VSCode according to [Drupal best practices](https://www.drupal.org/docs/develop/development-tools/editors-and-ides/configuring-visual-studio-code). Since not everyone uses VSCode and the integration overrides workspace settings, enabling this is optional.
+
+It's also possible to enable VSCode integration, then disable any undesirable extensions (from inside VSCode).
 
 ### See also
 
 - [Inputs documentation](https://devenv.sh/inputs/)
 - [Imports documentation](https://devenv.sh/composing-using-imports/)
 
-### 🚀 Finished!
+### Everyday usage
 
-Just run `devenv up` to start the services.
+Run `devenv up` to start the services.
 
 Or, if you didn't setup [automatic shell activation](https://devenv.sh/automatic-shell-activation/), run `devenv shell` and then `devenv up`.
 
 Automatic shell activation is highly recommended, it's a really cool feature for automatically switching development environments just by changing directory.
 
-## Customising
+## Customisation
 
 Check the [devenv guide](https://devenv.sh/getting-started/) for instructions on customising your Drupal development environment.
 
