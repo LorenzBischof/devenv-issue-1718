@@ -97,6 +97,8 @@ Add this anywhere in the `{ }` brackets.
 
 Note: if your extensions list does not include `"xdebug"` it will not be installed, since _drupal-devenv_ also uses `languages.php.extensions`. This also means you can disable XDebug in your environment, if you don't want it.
 
+Find more PHP extensions, and other packages, using [Nix package search](https://search.nixos.org).
+
 ## Footnotes
 
 ¹ Docker is fine, and Nix works well with it, but why use an extra layer of abstraction if it's not necessary? drupal-devenv aims to provide all the advantages of a Docker-based setup, without the container overhead.
