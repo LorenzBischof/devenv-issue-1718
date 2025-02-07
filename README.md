@@ -93,11 +93,20 @@ In your `devenv.nix` add the name of the extension. This example adds ImageMagic
 languages.php.extensions = [ "xdebug" "imagick" ];
 ```
 
-Add this anywhere in the `{ }` brackets.
-
 Note: if your extensions list does not include `"xdebug"` it will not be installed, since _drupal-devenv_ also uses `languages.php.extensions`. This also means you can disable XDebug in your environment, if you don't want it.
 
-Find more PHP extensions, and other packages, using [Nix package search](https://search.nixos.org).
+#### Switching PHP versions
+
+Add this to your `devenv.nix`:
+
+```nix
+languages.php.version = "7.4";
+```
+
+#### See also
+
+- For other options, see [Devenv's PHP documentation](https://devenv.sh/supported-languages/php/).
+- Find more PHP extensions, and other packages, using [Nix package search](https://search.nixos.org).
 
 ## Footnotes
 
