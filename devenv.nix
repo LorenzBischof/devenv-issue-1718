@@ -1,7 +1,8 @@
-{ pkgs
-, lib
-, config
-, ...
+{
+  pkgs,
+  lib,
+  config,
+  ...
 }:
 
 let
@@ -13,7 +14,12 @@ in
 
     url = lib.mkOption {
       type = lib.types.str;
-      default = (lib.lists.last (lib.path.subpath.components (lib.path.splitRoot (/. + builtins.toPath config.env.DEVENV_ROOT)).subpath)) + ".localhost";
+      default =
+        (lib.lists.last (
+          lib.path.subpath.components
+            (lib.path.splitRoot (/. + builtins.toPath config.env.DEVENV_ROOT)).subpath
+        ))
+        + ".localhost";
       defaultText = lib.literalExpression "<DIRECTORY NAME>.localhost";
       description = "This Drupal development site's URL. Defaults to the directory name + 'localhost'.";
     };
@@ -51,6 +57,7 @@ in
 
   imports = [
     ./vscode-integration.nix
+    ./templates.nix
   ];
 
   config = lib.mkIf cfg.enable {
@@ -123,18 +130,17 @@ in
       description = "Cleans up a SQL file from a Drupal site. Deletes cache and search index data, which can take up a large portion of a database dump";
     };
 
-    scripts.processes-attach =
-      {
-        exec = ''
-          if [ -S "${config.env.DEVENV_RUNTIME}/pc.sock" ]; then
-            process-compose attach --unix-socket=${config.env.DEVENV_RUNTIME}/pc.sock
-          else
-            echo 'Either the environment hasn't been started or `devenv up` wasn't started in the background' >&2
-            exit 1
-          fi
-        '';
-        description = "Connect to a background process-compose (only works if 'devenv up' was started in the background, using 'devenv up -d')";
-      };
+    scripts.processes-attach = {
+      exec = ''
+        if [ -S "${config.env.DEVENV_RUNTIME}/pc.sock" ]; then
+          process-compose attach --unix-socket=${config.env.DEVENV_RUNTIME}/pc.sock
+        else
+          echo 'Either the environment hasn't been started or `devenv up` wasn't started in the background' >&2
+          exit 1
+        fi
+      '';
+      description = "Connect to a background process-compose (only works if 'devenv up' was started in the background, using 'devenv up -d')";
+    };
 
     languages.php =
       let
@@ -176,7 +182,7 @@ in
         extraConfig = ''
           encode gzip
           log
-          root * ${config.env.DEVENV_ROOT}${if cfg.webRoot != "" then "/${cfg.webRoot}" else "" }
+          root * ${config.env.DEVENV_ROOT}${if cfg.webRoot != "" then "/${cfg.webRoot}" else ""}
           php_fastcgi unix//${config.languages.php.fpm.pools.drupal.socket}
           file_server
 
@@ -219,7 +225,7 @@ in
 
     services.mysql = {
       enable = lib.mkDefault true;
-      initialDatabases = [{ name = "${cfg.databaseName}"; }];
+      initialDatabases = [ { name = "${cfg.databaseName}"; } ];
       ensureUsers = [
         {
           name = "${cfg.databaseUser}";
@@ -386,4 +392,5 @@ in
         fi
       '';
   };
+
 }
